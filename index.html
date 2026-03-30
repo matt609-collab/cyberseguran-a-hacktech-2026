@@ -13,6 +13,7 @@
             --text-main: #c9d1d9;
             --text-dim: #8b949e;
             --danger: #f85149;
+            --border: #30363d;
         }
 
         body {
@@ -29,11 +30,11 @@
         nav {
             width: 240px;
             background-color: var(--card-bg);
-            border-right: 1px solid #30363d;
+            border-right: 1px solid var(--border);
             padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 10px;
         }
 
         .logo {
@@ -48,7 +49,7 @@
 
         .nav-item {
             cursor: pointer;
-            padding: 10px;
+            padding: 12px;
             border-radius: 6px;
             transition: 0.3s;
             color: var(--text-dim);
@@ -66,6 +67,9 @@
             overflow-y: auto;
         }
 
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
         header {
             display: flex;
             justify-content: space-between;
@@ -82,19 +86,19 @@
             font-size: 0.8rem;
         }
 
-        /* Grid Layout */
+        /* Grid Dashboard */
         .dashboard-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
-            grid-template-rows: auto auto;
             gap: 20px;
         }
 
         .card {
             background: var(--card-bg);
-            border: 1px solid #30363d;
+            border: 1px solid var(--border);
             border-radius: 8px;
             padding: 15px;
+            margin-bottom: 20px;
         }
 
         .card-title {
@@ -105,32 +109,7 @@
             letter-spacing: 1px;
         }
 
-        /* Visual Components */
-        .map-placeholder {
-            width: 100%;
-            height: 400px;
-            background: #21262d;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            background-image: url('https://api.placeholder.com/800/400/21262d/8b949e?text=Mapa+de+Pitanga+-+Localização+em+Tempo+Real');
-            background-size: cover;
-        }
-
-        .drone-marker {
-            width: 20px;
-            height: 20px;
-            background: var(--accent-blue);
-            border-radius: 50%;
-            box-shadow: 0 0 15px var(--accent-blue);
-            position: absolute;
-            top: 40%;
-            left: 55%;
-            animation: pulse 2s infinite;
-        }
-
+        /* Imagens Dashboard */
         .feed-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -141,40 +120,112 @@
             aspect-ratio: 16/9;
             background: black;
             border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            color: #444;
             position: relative;
             overflow: hidden;
+        }
+
+        .video-feed img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Faz a imagem preencher o box */
+            opacity: 0.7;
         }
 
         .feed-label {
             position: absolute;
             top: 5px;
             left: 5px;
-            background: rgba(0,0,0,0.6);
-            padding: 2px 6px;
+            background: rgba(0,0,0,0.7);
+            padding: 2px 8px;
             border-radius: 3px;
+            color: white;
+            font-size: 0.7rem;
+            z-index: 2;
+        }
+
+        /* Mapa e Marker */
+        .map-placeholder {
+            width: 100%;
+            height: 400px;
+            background-image: url('https://api.placeholder.com/800/400/21262d/8b949e?text=Mapa+Pitanga');
+            background-size: cover;
+            position: relative;
+        }
+
+        .drone-marker {
+            width: 15px;
+            height: 15px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--accent-blue);
+            position: absolute;
+            top: 45%; left: 52%;
+            animation: pulse 2s infinite;
+        }
+
+        /* Aba Incidências - Accordion */
+        .incident-item {
+            background: #1c2128;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: 0.3s;
+        }
+
+        .incident-header {
+            display: grid;
+            grid-template-columns: 100px 1fr 200px 150px;
+            padding: 15px;
+            align-items: center;
+        }
+
+        .incident-details {
+            max-height: 0;
+            padding: 0 15px;
+            background: #0d1117;
+            transition: max-height 0.3s ease-out, padding 0.3s;
+            display: flex;
+            gap: 20px;
+        }
+
+        .incident-item.open .incident-details {
+            max-height: 300px;
+            padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .detail-box { flex: 1; }
+
+        /* Aba Configurações */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; color: var(--text-dim); margin-bottom: 5px; font-size: 0.9rem; }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            background: #0d1117;
+            border: 1px solid var(--border);
+            border-radius: 4px;
             color: white;
         }
 
-        /* Incidents Table */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th, td {
-            text-align: left;
+        .btn-iot {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
             padding: 12px;
-            border-bottom: 1px solid #30363d;
-            font-size: 0.85rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
         }
-
-        .severity-high { color: var(--danger); }
 
         @keyframes pulse {
             0% { transform: scale(1); opacity: 1; }
@@ -187,28 +238,28 @@
 
 <nav>
     <div class="logo">🛰️ SkyGuard</div>
-    <div class="nav-item active" onclick="showTab('dashboard')">Painel de Controle</div>
-    <div class="nav-item" onclick="showTab('incidents')">Registros/Incidências</div>
-    <div class="nav-item">Configurações</div>
+    <div class="nav-item active" onclick="showTab('dashboard', this)">Painel de Controle</div>
+    <div class="nav-item" onclick="showTab('incidents', this)">Registros/Incidências</div>
+    <div class="nav-item" onclick="showTab('settings', this)">Configurações</div>
     <div style="margin-top: auto; font-size: 0.7rem; color: var(--text-dim);">
-        Nível Solar: 94% <br>
-        Bateria: 88%
+        Pitanga, PR - 2026<br>
+        Bateria Drone: 88%
     </div>
 </nav>
 
 <main>
-    <header>
-        <div>
-            <h1 style="margin:0; font-size: 1.5rem;">Pitanga: Monitoramento Local</h1>
-            <span style="color: var(--text-dim); font-size: 0.9rem;">Drone ID: PTG-01 | Modo: Autônomo</span>
-        </div>
-        <div class="status-badge">● Sistema Online</div>
-    </header>
+    <div id="dashboard" class="tab-content active">
+        <header>
+            <div>
+                <h1 style="margin:0; font-size: 1.5rem;">Monitoramento em Tempo Real</h1>
+                <span style="color: var(--text-dim); font-size: 0.9rem;">Drone ID: PTG-01 | Centro de Comando</span>
+            </div>
+            <div class="status-badge">● Sistema Online</div>
+        </header>
 
-    <div id="content-area">
         <div class="dashboard-grid">
             <div class="card">
-                <div class="card-title">Localização do Drone (Pitanga - PR)</div>
+                <div class="card-title">Localização do Drone</div>
                 <div class="map-placeholder">
                     <div class="drone-marker"></div>
                 </div>
@@ -219,15 +270,15 @@
                 <div class="feed-grid">
                     <div class="video-feed">
                         <span class="feed-label">CAM-01 (Centro)</span>
-                        <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=200&q=80" style="width:100%; opacity: 0.6;">
+                        <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=500&q=80">
                     </div>
                     <div class="video-feed">
                         <span class="feed-label">DRONE (Scan)</span>
-                        <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=200&q=80" style="width:100%; opacity: 0.6;">
+                        <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=500&q=80">
                     </div>
                     <div class="video-feed">
                         <span class="feed-label">CAM-04 (Periferia)</span>
-                        <img src="https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=200&q=80" style="width:100%; opacity: 0.6;">
+                        <img src="https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=500&q=80">
                     </div>
                     <div class="video-feed">
                         <span class="feed-label">TÉRMICA</span>
@@ -235,45 +286,118 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="card" style="grid-column: span 2;">
-                <div class="card-title">Últimas Incidências Detectadas</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Horário</th>
-                            <th>Tipo</th>
-                            <th>Localização</th>
-                            <th>Status</th>
-                            <th>Ação</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>10:45</td>
-                            <td>Suspeita de Desmatamento</td>
-                            <td>Área Rural Sul</td>
-                            <td class="severity-high">Em Verificação</td>
-                            <td><button style="background:none; border: 1px solid var(--accent-blue); color: var(--accent-blue); border-radius:4px; cursor:pointer;">Verificar</button></td>
-                        </tr>
-                        <tr>
-                            <td>09:12</td>
-                            <td>Direção Imprudente</td>
-                            <td>Av. Principal</td>
-                            <td>Registrado</td>
-                            <td><button style="background:none; border: 1px solid var(--text-dim); color: var(--text-dim); border-radius:4px;">Detalhes</button></td>
-                        </tr>
-                    </tbody>
-                </table>
+    <div id="incidents" class="tab-content">
+        <h1>Registros de Atividade</h1>
+        
+        <div class="incident-item" onclick="this.classList.toggle('open')">
+            <div class="incident-header">
+                <strong>10:45</strong>
+                <span>Suspeita de Desmatamento</span>
+                <span>Rua das Flores (Extensão Sul)</span>
+                <span style="color: var(--danger)">ALERTA ALTO</span>
+            </div>
+            <div class="incident-details">
+                <div class="detail-box">
+                    <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=300&q=80" style="width:100%; border-radius:4px;">
+                </div>
+                <div class="detail-box">
+                    <h4>Análise do Drone</h4>
+                    <p style="font-size: 0.85rem; color: var(--text-dim);">Detectado movimento de maquinário não autorizado em coordenadas -24.75, -51.76. Patrulha notificada via IoT.</p>
+                    <button class="btn-iot" style="padding: 5px; font-size: 0.8rem;">Baixar Relatório PDF</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="incident-item" onclick="this.classList.toggle('open')">
+            <div class="incident-header">
+                <strong>09:12</strong>
+                <span>Direção Perigosa</span>
+                <span>Rua Visconde de Guarapuava</span>
+                <span style="color: var(--accent-blue)">REGISTRADO</span>
+            </div>
+            <div class="incident-details">
+                <div class="detail-box">
+                    <div style="background: #21262d; height: 150px; display:flex; align-items:center; justify-content:center;">Vídeo do Incidente (MP4)</div>
+                </div>
+                <div class="detail-box">
+                    <h4>Dados da Placa</h4>
+                    <p style="font-size: 0.85rem; color: var(--text-dim);">Veículo em alta velocidade próximo à zona escolar. Identificação automática enviada ao banco de dados municipal.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="settings" class="tab-content">
+        <h1>Configurações do Sistema</h1>
+        
+        <div class="settings-grid">
+            <div class="card">
+                <div class="card-title">Interface e Usuário</div>
+                <div class="input-group">
+                    <label>Tema do Painel</label>
+                    <select>
+                        <option>Modo Noturno (Deep Sea)</option>
+                        <option>Modo Claro</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Proporção da UI (Escala)</label>
+                    <input type="range" min="80" max="120" value="100">
+                </div>
+                <div class="input-group">
+                    <label>Conta Administrador</label>
+                    <input type="text" value="admin_pitanga@skyguard.gov">
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🛰️ Gerenciador de Dispositivos IoT</div>
+                <p style="font-size:0.8rem; color:var(--text-dim);">Conecte novos drones ou sensores de solo à malha SkyGuard.</p>
+                <div class="input-group">
+                    <label>Endereço IP / Serial do Drone</label>
+                    <input type="text" placeholder="Ex: 192.168.1.105">
+                </div>
+                <div class="input-group">
+                    <label>Protocolo de Transmissão</label>
+                    <select>
+                        <option>RTMP (Baixa Latência)</option>
+                        <option>WebRTC</option>
+                        <option>Satellite Sync</option>
+                    </select>
+                </div>
+                <button class="btn-iot" onclick="alert('Buscando dispositivos na rede...')">CONECTAR NOVO DRONE</button>
+                
+                <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 10px;">
+                    <span style="font-size:0.7rem; color: var(--accent-green);">● Drone PTG-01 (Ativo)</span><br>
+                    <span style="font-size:0.7rem; color: var(--text-dim);">○ Drone PTG-02 (Offline - Carregando)</span>
+                </div>
             </div>
         </div>
     </div>
 </main>
 
 <script>
-    function showTab(tab) {
-        // Logica simples para mudar abas poderia ser implementada aqui
-        console.log("Mudando para aba: " + tab);
+    function showTab(tabId, element) {
+        // 1. Esconder todos os conteúdos
+        const contents = document.querySelectorAll('.tab-content');
+        contents.forEach(content => content.classList.remove('active'));
+
+        // 2. Remover classe active dos botões do menu
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => item.classList.remove('active'));
+
+        // 3. Mostrar a aba certa e ativar o botão
+        document.getElementById(tabId).classList.add('active');
+        element.classList.add('active');
+    }
+
+    // Esboço de função para conexão IoT (para uso futuro)
+    function connectToDrone(ip) {
+        console.log("Tentando handshake com dispositivo: " + ip);
+        // Aqui entraria a lógica de fetch() para sua API de controle de drones
     }
 </script>
 
