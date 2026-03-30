@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyGuard Pitanga | Drone Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --accent-green: #2ea043;
+            --accent-blue: #58a6ff;
+            --text-main: #c9d1d9;
+            --text-dim: #8b949e;
+            --danger: #f85149;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        nav {
+            width: 240px;
+            background-color: var(--card-bg);
+            border-right: 1px solid #30363d;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent-green);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-item {
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 6px;
+            transition: 0.3s;
+            color: var(--text-dim);
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: #21262d;
+            color: white;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .status-badge {
+            background: rgba(46, 160, 67, 0.1);
+            color: var(--accent-green);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid var(--accent-green);
+            font-size: 0.8rem;
+        }
+
+        /* Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Visual Components */
+        .map-placeholder {
+            width: 100%;
+            height: 400px;
+            background: #21262d;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background-image: url('https://api.placeholder.com/800/400/21262d/8b949e?text=Mapa+de+Pitanga+-+Localização+em+Tempo+Real');
+            background-size: cover;
+        }
+
+        .drone-marker {
+            width: 20px;
+            height: 20px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--accent-blue);
+            position: absolute;
+            top: 40%;
+            left: 55%;
+            animation: pulse 2s infinite;
+        }
+
+        .feed-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .video-feed {
+            aspect-ratio: 16/9;
+            background: black;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: #444;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feed-label {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: rgba(0,0,0,0.6);
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: white;
+        }
+
+        /* Incidents Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #30363d;
+            font-size: 0.85rem;
+        }
+
+        .severity-high { color: var(--danger); }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            70% { transform: scale(2); opacity: 0; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="logo">🛰️ SkyGuard</div>
+    <div class="nav-item active" onclick="showTab('dashboard')">Painel de Controle</div>
+    <div class="nav-item" onclick="showTab('incidents')">Registros/Incidências</div>
+    <div class="nav-item">Configurações</div>
+    <div style="margin-top: auto; font-size: 0.7rem; color: var(--text-dim);">
+        Nível Solar: 94% <br>
+        Bateria: 88%
+    </div>
+</nav>
+
+<main>
+    <header>
+        <div>
+            <h1 style="margin:0; font-size: 1.5rem;">Pitanga: Monitoramento Local</h1>
+            <span style="color: var(--text-dim); font-size: 0.9rem;">Drone ID: PTG-01 | Modo: Autônomo</span>
+        </div>
+        <div class="status-badge">● Sistema Online</div>
+    </header>
+
+    <div id="content-area">
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-title">Localização do Drone (Pitanga - PR)</div>
+                <div class="map-placeholder">
+                    <div class="drone-marker"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Feeds ao Vivo</div>
+                <div class="feed-grid">
+                    <div class="video-feed">
+                        <span class="feed-label">CAM-01 (Centro)</span>
+                        <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=200&q=80" style="width:100%; opacity: 0.6;">
+                    </div>
+                    <div class="video-feed">
+                        <span class="feed-label">DRONE (Scan)</span>
+                        <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=200&q=80" style="width:100%; opacity: 0.6;">
+                    </div>
+                    <div class="video-feed">
+                        <span class="feed-label">CAM-04 (Periferia)</span>
+                        <img src="https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=200&q=80" style="width:100%; opacity: 0.6;">
+                    </div>
+                    <div class="video-feed">
+                        <span class="feed-label">TÉRMICA</span>
+                        <div style="background: linear-gradient(45deg, #000033, #ff0000); width:100%; height:100%; opacity: 0.4;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="grid-column: span 2;">
+                <div class="card-title">Últimas Incidências Detectadas</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Horário</th>
+                            <th>Tipo</th>
+                            <th>Localização</th>
+                            <th>Status</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>10:45</td>
+                            <td>Suspeita de Desmatamento</td>
+                            <td>Área Rural Sul</td>
+                            <td class="severity-high">Em Verificação</td>
+                            <td><button style="background:none; border: 1px solid var(--accent-blue); color: var(--accent-blue); border-radius:4px; cursor:pointer;">Verificar</button></td>
+                        </tr>
+                        <tr>
+                            <td>09:12</td>
+                            <td>Direção Imprudente</td>
+                            <td>Av. Principal</td>
+                            <td>Registrado</td>
+                            <td><button style="background:none; border: 1px solid var(--text-dim); color: var(--text-dim); border-radius:4px;">Detalhes</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    function showTab(tab) {
+        // Logica simples para mudar abas poderia ser implementada aqui
+        console.log("Mudando para aba: " + tab);
+    }
+</script>
+
+</body>
+</html>
