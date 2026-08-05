@@ -3,403 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkyGuard Pitanga | Drone Dashboard</title>
+    <title>VAI PITANGA - Centro de Comando v6.0</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
-            --bg-color: #0d1117;
-            --card-bg: #161b22;
-            --accent-green: #2ea043;
-            --accent-blue: #58a6ff;
-            --text-main: #c9d1d9;
-            --text-dim: #8b949e;
-            --danger: #f85149;
-            --border: #30363d;
+            --primary: #2c3e50; --accent: #27ae60; --alert: #e74c3c;
+            --dark: #1a1a1a; --text: #ecf0f1; --highlight: #f1c40f;
+            --police: #2980b9; --fire: #e67e22; --offline: #7f8c8d;
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
+            margin: 0; font-family: 'Segoe UI', sans-serif;
+            display: grid; grid-template-columns: 280px 1fr 340px;
+            height: 100vh; background-color: var(--dark); color: var(--text); overflow: hidden;
         }
 
-        /* Sidebar */
-        nav {
-            width: 240px;
-            background-color: var(--card-bg);
-            border-right: 1px solid var(--border);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
+        /* LOGIN */
+        #login-screen { position:fixed; top:0; left:0; width:100%; height:100%; background:radial-gradient(circle, #2c3e50, #1a1a1a); z-index:9999; display:flex; align-items:center; justify-content:center; }
+        .login-box { background:var(--primary); padding:40px; border-radius:15px; border:2px solid var(--highlight); width:320px; text-align:center; }
+        .login-box input { width:100%; padding:12px; margin-bottom:15px; border-radius:6px; border:1px solid #34495e; background:#111; color:white; box-sizing: border-box; }
 
-        .logo {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--accent-green);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        /* PAINÉIS */
+        #sidebar-left, #fleet-panel { background: var(--primary); padding: 20px; border: 1px solid #34495e; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
+        .brand-header { background: var(--highlight); color: #000; padding: 10px; border-radius: 6px; text-align: center; font-weight: 900; font-size: 22px; margin-bottom: 5px; }
+        
+        .status-card { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border-left: 4px solid var(--accent); font-size: 0.8em; line-height: 1.6; }
+        
+        /* WIDGETS DRONE */
+        .panel-title { font-size: 14px; font-weight: bold; color: var(--highlight); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 5px; }
+        .drone-card { background: #111; border: 1px solid #333; border-radius: 8px; padding: 12px; margin-bottom: 12px; border-left: 4px solid var(--accent); transition: 0.3s; position: relative; }
+        .drone-card.offline { border-left-color: var(--offline); opacity: 0.5; filter: grayscale(1); }
+        .drone-card.alert-mode { border-left-color: var(--alert); background: #2c1a1a; animation: pulse-red 1.5s infinite; cursor: pointer; }
+        
+        .battery-bar { width: 100%; height: 6px; background: #333; border-radius: 3px; margin: 8px 0; overflow: hidden; }
+        .battery-fill { height: 100%; width: 100%; background: var(--accent); transition: 1s; }
+        
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 9px; color: #95a5a6; margin-top: 5px; }
 
-        .nav-item {
-            cursor: pointer;
-            padding: 12px;
-            border-radius: 6px;
-            transition: 0.3s;
-            color: var(--text-dim);
-        }
+        /* BOTÕES */
+        .btn-action { width: 100%; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 11px; }
+        .btn-add { background: var(--highlight); color: #000; margin-bottom: 15px; }
+        .btn-land { background: #444; color: white; padding: 3px 6px; font-size: 8px; border-radius: 3px; }
 
-        .nav-item:hover, .nav-item.active {
-            background: #21262d;
-            color: white;
-        }
+        #map-container { display: flex; flex-direction: column; height: 100%; }
+        #map { flex: 1; width: 100%; }
+        #box-ocorrencias { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 10px; border: 1px solid #34495e; flex-grow: 1; }
 
-        /* Main Content */
-        main {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
+        /* MODAL ALERTA */
+        #camera-overlay { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 420px; background: #000; border: 2px solid var(--highlight); z-index: 2000; border-radius: 12px; padding: 20px; box-shadow: 0 0 100px #000; }
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .status-badge {
-            background: rgba(46, 160, 67, 0.1);
-            color: var(--accent-green);
-            padding: 5px 15px;
-            border-radius: 20px;
-            border: 1px solid var(--accent-green);
-            font-size: 0.8rem;
-        }
-
-        /* Grid Dashboard */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        .card-title {
-            font-size: 0.9rem;
-            color: var(--text-dim);
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        /* Imagens Dashboard */
-        .feed-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .video-feed {
-            aspect-ratio: 16/9;
-            background: black;
-            border-radius: 4px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .video-feed img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* Faz a imagem preencher o box */
-            opacity: 0.7;
-        }
-
-        .feed-label {
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            background: rgba(0,0,0,0.7);
-            padding: 2px 8px;
-            border-radius: 3px;
-            color: white;
-            font-size: 0.7rem;
-            z-index: 2;
-        }
-
-        /* Mapa e Marker */
-        .map-placeholder {
-            width: 100%;
-            height: 400px;
-            background-image: url('https://api.placeholder.com/800/400/21262d/8b949e?text=Mapa+Pitanga');
-            background-size: cover;
-            position: relative;
-        }
-
-        .drone-marker {
-            width: 15px;
-            height: 15px;
-            background: var(--accent-blue);
-            border-radius: 50%;
-            box-shadow: 0 0 15px var(--accent-blue);
-            position: absolute;
-            top: 45%; left: 52%;
-            animation: pulse 2s infinite;
-        }
-
-        /* Aba Incidências - Accordion */
-        .incident-item {
-            background: #1c2128;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            overflow: hidden;
-            transition: 0.3s;
-        }
-
-        .incident-header {
-            display: grid;
-            grid-template-columns: 100px 1fr 200px 150px;
-            padding: 15px;
-            align-items: center;
-        }
-
-        .incident-details {
-            max-height: 0;
-            padding: 0 15px;
-            background: #0d1117;
-            transition: max-height 0.3s ease-out, padding 0.3s;
-            display: flex;
-            gap: 20px;
-        }
-
-        .incident-item.open .incident-details {
-            max-height: 300px;
-            padding: 20px;
-            border-top: 1px solid var(--border);
-        }
-
-        .detail-box { flex: 1; }
-
-        /* Aba Configurações */
-        .settings-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .input-group { margin-bottom: 15px; }
-        label { display: block; color: var(--text-dim); margin-bottom: 5px; font-size: 0.9rem; }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            background: #0d1117;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            color: white;
-        }
-
-        .btn-iot {
-            background: var(--accent-blue);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            70% { transform: scale(2); opacity: 0; }
-            100% { transform: scale(1); opacity: 0; }
-        }
+        @keyframes pulse-red { 0%, 100% { box-shadow: 0 0 5px var(--alert); } 50% { box-shadow: 0 0 20px var(--alert); } }
     </style>
 </head>
 <body>
 
-<nav>
-    <div class="logo">🛰️ SkyGuard</div>
-    <div class="nav-item active" onclick="showTab('dashboard', this)">Painel de Controle</div>
-    <div class="nav-item" onclick="showTab('incidents', this)">Registros/Incidências</div>
-    <div class="nav-item" onclick="showTab('settings', this)">Configurações</div>
-    <div style="margin-top: auto; font-size: 0.7rem; color: var(--text-dim);">
-        Pitanga, PR - 2026<br>
-        Bateria Drone: 88%
-    </div>
-</nav>
-
-<main>
-    <div id="dashboard" class="tab-content active">
-        <header>
-            <div>
-                <h1 style="margin:0; font-size: 1.5rem;">Monitoramento em Tempo Real</h1>
-                <span style="color: var(--text-dim); font-size: 0.9rem;">Drone ID: PTG-01 | Centro de Comando</span>
-            </div>
-            <div class="status-badge">● Sistema Online</div>
-        </header>
-
-        <div class="dashboard-grid">
-            <div class="card">
-                <div class="card-title">Localização do Drone</div>
-                <div class="map-placeholder">
-                    <div class="drone-marker"></div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-title">Feeds ao Vivo</div>
-                <div class="feed-grid">
-                    <div class="video-feed">
-                        <span class="feed-label">CAM-01 (Centro)</span>
-                        <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=500&q=80">
-                    </div>
-                    <div class="video-feed">
-                        <span class="feed-label">DRONE (Scan)</span>
-                        <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=500&q=80">
-                    </div>
-                    <div class="video-feed">
-                        <span class="feed-label">CAM-04 (Periferia)</span>
-                        <img src="https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=500&q=80">
-                    </div>
-                    <div class="video-feed">
-                        <span class="feed-label">TÉRMICA</span>
-                        <div style="background: linear-gradient(45deg, #000033, #ff0000); width:100%; height:100%; opacity: 0.4;"></div>
-                    </div>
-                </div>
-            </div>
+    <div id="login-screen">
+        <div class="login-box">
+            <div class="brand-header">VAI PITANGA</div>
+            <input type="text" id="user-input" placeholder="Usuário">
+            <input type="password" id="pass-input" placeholder="Senha">
+            <button onclick="autenticar()" class="btn-action" style="background:var(--accent); color:white;">LOGON SISTEMA</button>
+            <p id="login-error" style="color:var(--alert); font-size:10px; margin-top:10px; display:none;">Credenciais Inválidas</p>
         </div>
     </div>
 
-    <div id="incidents" class="tab-content">
-        <h1>Registros de Atividade</h1>
+    <aside id="sidebar-left">
+        <div class="brand-header">VAI PITANGA</div>
         
-        <div class="incident-item" onclick="this.classList.toggle('open')">
-            <div class="incident-header">
-                <strong>10:45</strong>
-                <span>Suspeita de Desmatamento</span>
-                <span>Rua das Flores (Extensão Sul)</span>
-                <span style="color: var(--danger)">ALERTA ALTO</span>
-            </div>
-            <div class="incident-details">
-                <div class="detail-box">
-                    <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=300&q=80" style="width:100%; border-radius:4px;">
-                </div>
-                <div class="detail-box">
-                    <h4>Análise do Drone</h4>
-                    <p style="font-size: 0.85rem; color: var(--text-dim);">Detectado movimento de maquinário não autorizado em coordenadas -24.75, -51.76. Patrulha notificada via IoT.</p>
-                    <button class="btn-iot" style="padding: 5px; font-size: 0.8rem;">Baixar Relatório PDF</button>
-                </div>
-            </div>
+        <div class="status-card">
+            <strong>🛰️ SISTEMA CENTRAL</strong><br>
+            Status: <span id="sys-status" style="color:var(--accent)">Operacional</span><br>
+            Células Ativas: <span id="celulas-count">04</span><br>
+            Frequência: 5.8 GHz
         </div>
 
-        <div class="incident-item" onclick="this.classList.toggle('open')">
-            <div class="incident-header">
-                <strong>09:12</strong>
-                <span>Direção Perigosa</span>
-                <span>Rua Visconde de Guarapuava</span>
-                <span style="color: var(--accent-blue)">REGISTRADO</span>
-            </div>
-            <div class="incident-details">
-                <div class="detail-box">
-                    <div style="background: #21262d; height: 150px; display:flex; align-items:center; justify-content:center;">Vídeo do Incidente (MP4)</div>
-                </div>
-                <div class="detail-box">
-                    <h4>Dados da Placa</h4>
-                    <p style="font-size: 0.85rem; color: var(--text-dim);">Veículo em alta velocidade próximo à zona escolar. Identificação automática enviada ao banco de dados municipal.</p>
-                </div>
-            </div>
+        <div id="weather-card" style="background: linear-gradient(135deg, #1e3c72, #2a5298); padding: 15px; border-radius: 10px; font-size: 0.8em; border-left: 4px solid var(--highlight);">
+            <strong>CLIMA PITANGA</strong><br>
+            <span id="clima-txt">ENSOLARADO</span><br>
+            <strong style="color:var(--highlight);">🌧️ PREVISÃO: <span id="chuva-val">0.0mm</span></strong>
         </div>
+
+        <div id="box-ocorrencias">
+            <div class="panel-title" style="font-size: 11px;">Ocorrências Recentes</div>
+            <ul id="lista-resumo" style="list-style:none; padding:0; font-size:10px;">
+                <li id="empty-msg" style="color:#7f8c8d; font-style:italic;">Aguardando detecção...</li>
+            </ul>
+        </div>
+
+        <div class="status-card" style="font-size: 9px; margin-top:auto; border-left-color: var(--highlight);">
+            <strong>EQUIPE EPT:</strong><br>José, Lorena, Matheus C., Thassila e Matheus E.
+        </div>
+    </aside>
+
+    <main id="map-container">
+        <div id="map"></div>
+        <div style="height:140px; background:var(--primary); padding:10px; overflow-y:auto; font-size:0.8em; border-top:2px solid var(--highlight);">
+            <table id="tabela-logs" style="width:100%; text-align:left;">
+                <thead><tr><th>Hora</th><th>Drone</th><th>Evento</th><th>Status</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </main>
+
+    <aside id="fleet-panel">
+        <div class="panel-title">Monitoramento de Frota</div>
+        <button class="btn-action btn-add" onclick="adicionarDrone()">➕ ADICIONAR NOVO DRONE</button>
+        <div id="drone-list"></div>
+    </aside>
+
+    <div id="camera-overlay">
+        <h4 style="margin:0; color:var(--highlight); display:flex; justify-content:space-between;">
+            <span>⚠️ ALERTA DE SEGURANÇA: <span id="drone-alerta-id"></span></span>
+            <span style="color:red; font-size:10px;">AO VIVO</span>
+        </h4>
+        <div style="height:200px; background:#111; margin:15px 0; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--highlight); border:1px solid #333;">
+            <div id="ia-box" style="border:1px solid var(--highlight); padding:10px; font-size:12px;">ANALISANDO FRAME...</div>
+            <small style="margin-top:10px; color:#666;">Câmera Térmica Ativa</small>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button onclick="despachar('Bombeiros')" class="btn-action" style="background:var(--fire); color:white;">🚒 ACIONAR BOMBEIROS</button>
+            <button onclick="despachar('Polícia')" class="btn-action" style="background:var(--police); color:white;">🚓 ACIONAR POLÍCIA</button>
+        </div>
+        <button onclick="fecharAlerta()" style="width:100%; margin-top:10px; background:none; border:1px solid #444; color:#95a5a6; cursor:pointer; font-size:10px; padding:5px;">DESCARTAR FALSO POSITIVO</button>
     </div>
 
-    <div id="settings" class="tab-content">
-        <h1>Configurações do Sistema</h1>
-        
-        <div class="settings-grid">
-            <div class="card">
-                <div class="card-title">Interface e Usuário</div>
-                <div class="input-group">
-                    <label>Tema do Painel</label>
-                    <select>
-                        <option>Modo Noturno (Deep Sea)</option>
-                        <option>Modo Claro</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>Proporção da UI (Escala)</label>
-                    <input type="range" min="80" max="120" value="100">
-                </div>
-                <div class="input-group">
-                    <label>Conta Administrador</label>
-                    <input type="text" value="admin_pitanga@skyguard.gov">
-                </div>
-            </div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([-24.7572, -51.7600], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-            <div class="card">
-                <div class="card-title">🛰️ Gerenciador de Dispositivos IoT</div>
-                <p style="font-size:0.8rem; color:var(--text-dim);">Conecte novos drones ou sensores de solo à malha SkyGuard.</p>
-                <div class="input-group">
-                    <label>Endereço IP / Serial do Drone</label>
-                    <input type="text" placeholder="Ex: 192.168.1.105">
-                </div>
-                <div class="input-group">
-                    <label>Protocolo de Transmissão</label>
-                    <select>
-                        <option>RTMP (Baixa Latência)</option>
-                        <option>WebRTC</option>
-                        <option>Satellite Sync</option>
-                    </select>
-                </div>
-                <button class="btn-iot" onclick="alert('Buscando dispositivos na rede...')">CONECTAR NOVO DRONE</button>
-                
-                <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 10px;">
-                    <span style="font-size:0.7rem; color: var(--accent-green);">● Drone PTG-01 (Ativo)</span><br>
-                    <span style="font-size:0.7rem; color: var(--text-dim);">○ Drone PTG-02 (Offline - Carregando)</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</main>
+        const locais = ["Centro", "Vila Planalto", "Vila Nova", "Jardim Europa", "Bairro Industrial"];
+        let drones = [
+            { id: "VAI-01", bateria: 95, status: "ON-LINE", local: "Centro", sinal: "5G" },
+            { id: "VAI-02", bateria: 88, status: "ON-LINE", local: "Vila Nova", sinal: "Satélite" },
+            { id: "VAI-03", bateria: 92, status: "ON-LINE", local: "Planalto", sinal: "5G" },
+            { id: "VAI-04", bateria: 75, status: "ON-LINE", local: "Industrial", sinal: "Rádio" }
+        ];
 
-<script>
-    function showTab(tabId, element) {
-        // 1. Esconder todos os conteúdos
-        const contents = document.querySelectorAll('.tab-content');
-        contents.forEach(content => content.classList.remove('active'));
+        let droneEmAlerta = "";
 
-        // 2. Remover classe active dos botões do menu
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => item.classList.remove('active'));
+        function autenticar() {
+            if(document.getElementById('user-input').value === "admin" && document.getElementById('pass-input').value === "ept") {
+                document.getElementById('login-screen').style.display = 'none';
+                renderizarFrota();
+                cicloVida();
+            } else {
+                document.getElementById('login-error').style.display = 'block';
+            }
+        }
 
-        // 3. Mostrar a aba certa e ativar o botão
-        document.getElementById(tabId).classList.add('active');
-        element.classList.add('active');
-    }
+        function renderizarFrota() {
+            const list = document.getElementById('drone-list');
+            list.innerHTML = "";
+            drones.forEach((d, index) => {
+                const off = d.status === "OFF-LINE";
+                list.innerHTML += `
+                    <div id="card-${d.id}" class="drone-card ${off ? 'offline' : ''}" onclick="${d.status === 'ALERTA' ? 'abrirAlerta(\''+d.id+'\')' : ''}">
+                        <div style="display:flex; justify-content:space-between; font-size:11px;">
+                            <strong>${d.id}</strong> 
+                            <span style="color:${off ? 'var(--offline)' : 'var(--accent)'}">${d.status}</span>
+                        </div>
+                        <div class="battery-bar">
+                            <div id="bat-fill-${d.id}" class="battery-fill" style="width:${d.bateria}%; background:${d.bateria < 20 ? 'var(--alert)' : 'var(--accent)'}"></div>
+                        </div>
+                        <div class="info-grid">
+                            <span>📍 ${d.local}</span>
+                            <span>📡 ${d.sinal}</span>
+                            <span>🔋 Reserva: <span id="bat-txt-${d.id}">${d.bateria.toFixed(1)}</span>%</span>
+                            ${!off ? `<button class="btn-land" onclick="event.stopPropagation(); pousarDrone(${index})">POUSAR</button>` : '<span>EM SOLO</span>'}
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('celulas-count').innerText = drones.filter(d => d.status !== "OFF-LINE").length.toString().padStart(2, '0');
+        }
 
-    // Esboço de função para conexão IoT (para uso futuro)
-    function connectToDrone(ip) {
-        console.log("Tentando handshake com dispositivo: " + ip);
-        // Aqui entraria a lógica de fetch() para sua API de controle de drones
-    }
-</script>
+        function adicionarDrone() {
+            const novoId = `VAI-0${drones.length + 1}`;
+            drones.push({ id: novoId, bateria: 100, status: "ON-LINE", local: locais[Math.floor(Math.random()*locais.length)], sinal: "5G" });
+            renderizarFrota();
+            registrarLog(novoId, "Drone Inicializado", "OK");
+        }
 
+        function pousarDrone(index) {
+            drones[index].status = "OFF-LINE";
+            registrarLog(drones[index].id, "Pouso Concluído", "SOLO");
+            renderizarFrota();
+        }
+
+        function cicloVida() {
+            const nublado = Math.random() < 0.3;
+            document.getElementById('clima-txt').innerText = nublado ? "NUBLADO" : "ENSOLARADO";
+            document.getElementById('chuva-val').innerText = (nublado ? (Math.random()*4).toFixed(1) : "0.0") + "mm";
+
+            drones.forEach(d => {
+                if(d.status !== "OFF-LINE") {
+                    d.bateria -= nublado ? 0.6 : 0.2;
+                    if(d.bateria < 0) d.bateria = 0;
+                    
+                    const fill = document.getElementById(`bat-fill-${d.id}`);
+                    const txt = document.getElementById(`bat-txt-${d.id}`);
+                    if(fill) {
+                        fill.style.width = d.bateria + "%";
+                        fill.style.background = d.bateria < 20 ? "var(--alert)" : "var(--accent)";
+                    }
+                    if(txt) txt.innerText = d.bateria.toFixed(1);
+                }
+            });
+
+            if(Math.random() < 0.1) {
+                const disponivel = drones.find(d => d.status === "ON-LINE");
+                if(disponivel) dispararAlerta(disponivel);
+            }
+            setTimeout(cicloVida, 3000);
+        }
+
+        function dispararAlerta(drone) {
+            drone.status = "ALERTA";
+            droneEmAlerta = drone.id;
+            renderizarFrota();
+            
+            const lista = document.getElementById('lista-resumo');
+            document.getElementById('empty-msg').style.display = 'none';
+            const item = document.createElement('li');
+            item.id = `resumo-${drone.id}`;
+            item.style.borderBottom = "1px solid #333";
+            item.style.padding = "5px 0";
+            item.innerHTML = `<b style="color:var(--alert)">🚨 ALERTA: ${drone.id}</b><br><small>${drone.local} - Clique para abrir</small>`;
+            item.style.cursor = "pointer";
+            item.onclick = () => abrirAlerta(drone.id);
+            lista.prepend(item);
+        }
+
+        function abrirAlerta(id) {
+            droneEmAlerta = id;
+            document.getElementById('drone-alerta-id').innerText = id;
+            document.getElementById('ia-box').innerText = "SUSPEITA DE INCÊNDIO EM " + drones.find(d => d.id === id).local.toUpperCase();
+            document.getElementById('camera-overlay').style.display = 'block';
+        }
+
+        function fecharAlerta() {
+            document.getElementById('camera-overlay').style.display = 'none';
+            const d = drones.find(d => d.id === droneEmAlerta);
+            if(d) d.status = "ON-LINE";
+            renderizarFrota();
+        }
+
+        function despachar(orgao) {
+            registrarLog(droneEmAlerta, "Despacho: " + orgao, "EM CURSO");
+            const resumo = document.getElementById(`resumo-${droneEmAlerta}`);
+            if(resumo) {
+                resumo.innerHTML = `<b style="color:var(--accent)">✅ RESOLVIDO: ${orgao}</b><br><small>${droneEmAlerta} em base.</small>`;
+                resumo.onclick = null;
+            }
+            fecharAlerta();
+        }
+
+        function registrarLog(id, acao, status) {
+            const tbody = document.querySelector('#tabela-logs tbody');
+            const row = tbody.insertRow(0);
+            row.innerHTML = `<td>${new Date().toLocaleTimeString().slice(0,5)}</td><td>${id}</td><td>${acao}</td><td>${status}</td>`;
+        }
+    </script>
 </body>
 </html>
