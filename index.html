@@ -93,6 +93,9 @@
         <div class="status-card" style="font-size: 9px; margin-top:auto; border-left-color: var(--highlight);">
             <strong>EQUIPE EPT:</strong><br>José, Lorena, Matheus C., Thassila e Matheus E.
         </div>
+    <button class="btn-action" style="background: var(--highlight); color: #000; margin-top: 10px;" onclick="window.location.href='planos.html'">
+    💳 GERENCIAR ASSINATURA
+</button>
     </aside>
 
     <main id="map-container">
@@ -130,7 +133,11 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         const map = L.map('map').setView([-24.7572, -51.7600], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri',
+        maxZoom: 18
+        }).addTo(map);
 
         const locais = ["Centro", "Vila Planalto", "Vila Nova", "Jardim Europa", "Bairro Industrial"];
         let drones = [
@@ -143,13 +150,9 @@
         let droneEmAlerta = "";
 
         function autenticar() {
-            if(document.getElementById('user-input').value === "admin" && document.getElementById('pass-input').value === "ept") {
                 document.getElementById('login-screen').style.display = 'none';
                 renderizarFrota();
                 cicloVida();
-            } else {
-                document.getElementById('login-error').style.display = 'block';
-            }
         }
 
         function renderizarFrota() {
