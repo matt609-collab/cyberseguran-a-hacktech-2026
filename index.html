@@ -90,12 +90,16 @@
             </ul>
         </div>
 
-        <div class="status-card" style="font-size: 9px; margin-top:auto; border-left-color: var(--highlight);">
-            <strong>EQUIPE EPT:</strong><br>José, Lorena, Matheus C., Thassila e Matheus E.
-        </div>
-    <button class="btn-action" style="background: var(--highlight); color: #000; margin-top: 10px;" onclick="window.location.href='planos.html'">
-    💳 GERENCIAR ASSINATURA
+        <!-- NOVO BLOCO NO FINAL DA SIDEBAR ESQUERDA -->
+<div style="margin-top:auto; display:flex; flex-direction:column; gap:8px;">
+    <button onclick="window.location.href='creditos.html'" class="btn-action" style="background:var(--highlight); color:#000; font-weight:bold;">
+        👥 EQUIPE E ESPECIFICAÇÕES
     </button>
+    <button onclick="window.location.href='planos.html'" class="btn-action" style="background:var(--accent); color:white;">
+        💳 PLANOS E ASSINATURA
+    </button>
+</div>
+
         </aside>
 
     <main id="map-container">
@@ -166,7 +170,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 const locais = ["Centro", "Vila Planalto", "Vila Nova", "Jardim Europa", "Bairro Industrial"];
 
 // Banco de GIFs simulando feeds de câmera de drone
-const randomIdleGifs = ["/gifs/drone_flying.gif", "/gifs/drone_aura.gif", "/gifs/drone_extreme.gif", "/gifs/evil_drone.gif"];
+const randomIdleGifs = ["/gifs/done_flying.gif", "/gifs/drone_aura.gif", "/gifs/drone_extreme.gif", "/gifs/evil_drone.gif"];
 const fireHazardGifs = ["/gifs/drone_fire.jpg", "/gifs/drone_fire2.jpg"];
 const theftGifs = ["/gifs/gtadrone.jpg", "/gifs/gtadrone2.gif"];
 
