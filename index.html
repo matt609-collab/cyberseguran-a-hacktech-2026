@@ -95,8 +95,8 @@
         </div>
     <button class="btn-action" style="background: var(--highlight); color: #000; margin-top: 10px;" onclick="window.location.href='planos.html'">
     💳 GERENCIAR ASSINATURA
-</button>
-    </aside>
+    </button>
+        </aside>
 
     <main id="map-container">
         <div id="map"></div>
@@ -115,158 +115,294 @@
     </aside>
 
     <div id="camera-overlay">
-        <h4 style="margin:0; color:var(--highlight); display:flex; justify-content:space-between;">
-            <span>⚠️ ALERTA DE SEGURANÇA: <span id="drone-alerta-id"></span></span>
-            <span style="color:red; font-size:10px;">AO VIVO</span>
-        </h4>
-        <div style="height:200px; background:#111; margin:15px 0; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--highlight); border:1px solid #333;">
-            <div id="ia-box" style="border:1px solid var(--highlight); padding:10px; font-size:12px;">ANALISANDO FRAME...</div>
-            <small style="margin-top:10px; color:#666;">Câmera Térmica Ativa</small>
-        </div>
-        <div style="display:flex; gap:10px;">
-            <button onclick="despachar('Bombeiros')" class="btn-action" style="background:var(--fire); color:white;">🚒 ACIONAR BOMBEIROS</button>
-            <button onclick="despachar('Polícia')" class="btn-action" style="background:var(--police); color:white;">🚓 ACIONAR POLÍCIA</button>
-        </div>
-        <button onclick="fecharAlerta()" style="width:100%; margin-top:10px; background:none; border:1px solid #444; color:#95a5a6; cursor:pointer; font-size:10px; padding:5px;">DESCARTAR FALSO POSITIVO</button>
+    <h4 style="margin:0; color:var(--highlight); display:flex; justify-content:space-between;">
+        <span>⚠️ ALERTA DE SEGURANÇA: <span id="drone-alerta-id"></span></span>
+        <span style="color:red; font-size:10px;">AO VIVO</span>
+    </h4>
+    <div style="height:200px; background:#111; margin:15px 0; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--highlight); border:1px solid #333; overflow:hidden; position:relative;">
+        <img id="camera-feed-img" src="" alt="Feed de Alerta" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; opacity:0.65;">
+        <div id="ia-box" style="border:1px solid var(--highlight); padding:10px; font-size:12px; position:relative; z-index:2; background:rgba(0,0,0,0.85);">ANALISANDO FRAME...</div>
+        <small style="margin-top:5px; color:#aaa; position:relative; z-index:2; background:rgba(0,0,0,0.6); padding:2px 6px; border-radius:3px;">Câmera Térmica / Sensores Ativos</small>
     </div>
+    <div style="display:flex; gap:10px;">
+        <button onclick="despachar('Bombeiros')" class="btn-action" style="background:var(--fire); color:white;">🚒 ACIONAR BOMBEIROS</button>
+        <button onclick="despachar('Polícia')" class="btn-action" style="background:var(--police); color:white;">🚓 ACIONAR POLÍCIA</button>
+    </div>
+    <button onclick="fecharAlerta()" style="width:100%; margin-top:10px; background:none; border:1px solid #444; color:#95a5a6; cursor:pointer; font-size:10px; padding:5px;">DESCARTAR FALSO POSITIVO</button>
+</div>
+    <!-- MODAL DE INSPEÇÃO DO DRONE -->
+<div id="modal-inspecao" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:440px; background:#111; border:2px solid var(--highlight); border-radius:12px; padding:20px; z-index:3000; box-shadow:0 0 50px rgba(0,0,0,0.9); color:var(--text);">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:15px;">
+        <h3 style="margin:0; color:var(--highlight);" id="inspecao-title">🔍 INSPEÇÃO: DRONE</h3>
+        <button onclick="fecharInspecao()" style="background:none; border:none; color:#95a5a6; font-size:16px; cursor:pointer;">✖</button>
+    </div>
+    
+    <!-- FEED AO VIVO (GIF ALEATÓRIO) -->
+    <div style="width:100%; height:200px; background:#000; border:1px solid #333; border-radius:6px; overflow:hidden; position:relative; margin-bottom:15px; display:flex; align-items:center; justify-content:center;">
+        <img id="inspecao-feed" src="" alt="Feed ao vivo" style="width:100%; height:100%; object-fit:cover;">
+        <div style="position:absolute; top:10px; right:10px; background:rgba(231,76,60,0.85); color:white; font-size:9px; padding:3px 8px; border-radius:3px; font-weight:bold; letter-spacing:1px;">● TRANSMISSÃO AO VIVO</div>
+    </div>
+
+    <!-- INFORMAÇÕES DETALHADAS -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:11px; background:rgba(255,255,255,0.04); padding:12px; border-radius:6px; margin-bottom:15px; border:1px solid #222;">
+        <div><strong>📍 Local:</strong> <span id="inspecao-local" style="color:var(--highlight);">-</span></div>
+        <div><strong>🌐 Coordenadas:</strong> <span id="inspecao-coords" style="color:#aaa;">-</span></div>
+        <div><strong>🔋 Bateria:</strong> <span id="inspecao-bateria">-</span></div>
+        <div><strong>📡 Sinal:</strong> <span id="inspecao-sinal" style="color:var(--accent);">-</span></div>
+    </div>
+
+    <!-- AÇÕES -->
+    <div style="display:flex; gap:10px;">
+        <button id="inspecao-btn-pousar" class="btn-action" style="background:var(--alert); color:white;">🛬 POUSAR DRONE</button>
+        <button onclick="fecharInspecao()" class="btn-action" style="background:#333; color:white;">FECHAR</button>
+    </div>
+</div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         const map = L.map('map').setView([-24.7572, -51.7600], 14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles &copy; Esri',
-        maxZoom: 18
-        }).addTo(map);
+const locais = ["Centro", "Vila Planalto", "Vila Nova", "Jardim Europa", "Bairro Industrial"];
 
-        const locais = ["Centro", "Vila Planalto", "Vila Nova", "Jardim Europa", "Bairro Industrial"];
-        let drones = [
-            { id: "VAI-01", bateria: 95, status: "ON-LINE", local: "Centro", sinal: "5G" },
-            { id: "VAI-02", bateria: 88, status: "ON-LINE", local: "Vila Nova", sinal: "Satélite" },
-            { id: "VAI-03", bateria: 92, status: "ON-LINE", local: "Planalto", sinal: "5G" },
-            { id: "VAI-04", bateria: 75, status: "ON-LINE", local: "Industrial", sinal: "Rádio" }
-        ];
+// Banco de GIFs simulando feeds de câmera de drone
+const randomIdleGifs = ["/gifs/drone_flying.gif", "/gifs/drone_aura.gif", "/gifs/drone_extreme.gif", "/gifs/evil_drone.gif"];
+const fireHazardGifs = ["/gifs/drone_fire.jpg", "/gifs/drone_fire2.jpg"];
+const theftGifs = ["/gifs/gtadrone.jpg", "/gifs/gtadrone2.gif"];
 
-        let droneEmAlerta = "";
+let drones = [
+    { id: "VAI-01", bateria: 95, status: "ON-LINE", local: "Centro", sinal: "5G", coords: "-24.7572, -51.7600" },
+    { id: "VAI-02", bateria: 88, status: "ON-LINE", local: "Vila Nova", sinal: "Satélite", coords: "-24.7610, -51.7520" },
+    { id: "VAI-03", bateria: 92, status: "ON-LINE", local: "Planalto", sinal: "5G", coords: "-24.7490, -51.7680" },
+    { id: "VAI-04", bateria: 75, status: "ON-LINE", local: "Industrial", sinal: "Rádio", coords: "-24.7700, -51.7400" }
+];
 
-        function autenticar() {
-                document.getElementById('login-screen').style.display = 'none';
-                renderizarFrota();
-                cicloVida();
-        }
+let droneEmAlerta = "";
+let droneEmInspecaoIndex = null;
 
-        function renderizarFrota() {
-            const list = document.getElementById('drone-list');
-            list.innerHTML = "";
-            drones.forEach((d, index) => {
-                const off = d.status === "OFF-LINE";
-                list.innerHTML += `
-                    <div id="card-${d.id}" class="drone-card ${off ? 'offline' : ''}" onclick="${d.status === 'ALERTA' ? 'abrirAlerta(\''+d.id+'\')' : ''}">
-                        <div style="display:flex; justify-content:space-between; font-size:11px;">
-                            <strong>${d.id}</strong> 
-                            <span style="color:${off ? 'var(--offline)' : 'var(--accent)'}">${d.status}</span>
-                        </div>
-                        <div class="battery-bar">
-                            <div id="bat-fill-${d.id}" class="battery-fill" style="width:${d.bateria}%; background:${d.bateria < 20 ? 'var(--alert)' : 'var(--accent)'}"></div>
-                        </div>
-                        <div class="info-grid">
-                            <span>📍 ${d.local}</span>
-                            <span>📡 ${d.sinal}</span>
-                            <span>🔋 Reserva: <span id="bat-txt-${d.id}">${d.bateria.toFixed(1)}</span>%</span>
-                            ${!off ? `<button class="btn-land" onclick="event.stopPropagation(); pousarDrone(${index})">POUSAR</button>` : '<span>EM SOLO</span>'}
-                        </div>
-                    </div>
-                `;
-            });
-            document.getElementById('celulas-count').innerText = drones.filter(d => d.status !== "OFF-LINE").length.toString().padStart(2, '0');
-        }
+function autenticar() {
+    if(document.getElementById('user-input').value === "usuario" && document.getElementById('pass-input').value === "senha") {
+        document.getElementById('login-screen').style.display = 'none';
+        renderizarFrota();
+        cicloVida();
+    } else {
+        document.getElementById('login-error').style.display = 'block';
+    }
+}
 
-        function adicionarDrone() {
-            const novoId = `VAI-0${drones.length + 1}`;
-            drones.push({ id: novoId, bateria: 100, status: "ON-LINE", local: locais[Math.floor(Math.random()*locais.length)], sinal: "5G" });
-            renderizarFrota();
-            registrarLog(novoId, "Drone Inicializado", "OK");
-        }
+function renderizarFrota() {
+    const list = document.getElementById('drone-list');
+    list.innerHTML = "";
+    drones.forEach((d, index) => {
+        const off = d.status === "OFF-LINE";
+        const pousando = d.status === "POUSANDO";
+        
+        let statusCor = 'var(--accent)';
+        if (off) statusCor = 'var(--offline)';
+        if (pousando || d.status === 'ALERTA') statusCor = 'var(--alert)';
 
-        function pousarDrone(index) {
-            drones[index].status = "OFF-LINE";
-            registrarLog(drones[index].id, "Pouso Concluído", "SOLO");
-            renderizarFrota();
-        }
+        list.innerHTML += `
+            <div id="card-${d.id}" class="drone-card ${off ? 'offline' : ''} ${pousando ? 'alert-mode' : ''}" onclick="${d.status === 'ALERTA' ? 'abrirAlerta(\''+d.id+'\')' : ''}">
+                <div style="display:flex; justify-content:space-between; font-size:11px;">
+                    <strong>${d.id}</strong> 
+                    <span style="color:${statusCor}">${d.status}</span>
+                </div>
+                <div class="battery-bar">
+                    <div id="bat-fill-${d.id}" class="battery-fill" style="width:${d.bateria}%; background:${d.bateria < 20 ? 'var(--alert)' : 'var(--accent)'}"></div>
+                </div>
+                <div class="info-grid">
+                    <span>📍 ${d.local}</span>
+                    <span>📡 ${d.sinal}</span>
+                    <span>🔋 Reserva: <span id="bat-txt-${d.id}">${d.bateria.toFixed(1)}</span>%</span>
+                    ${!off && !pousando ? `<button class="btn-land" style="background:var(--highlight); color:#000; font-weight:bold;" onclick="event.stopPropagation(); abrirInspecao(${index})">🔍 INSPECIONAR</button>` : ''}
+                    ${pousando ? `<span style="color:var(--alert); font-weight:bold;">RETORNANDO...</span>` : ''}
+                    ${off ? '<span>EM SOLO</span>' : ''}
+                </div>
+            </div>
+        `;
+    });
+    document.getElementById('celulas-count').innerText = drones.filter(d => d.status !== "OFF-LINE").length.toString().padStart(2, '0');
+}
 
-        function cicloVida() {
-            const nublado = Math.random() < 0.3;
-            document.getElementById('clima-txt').innerText = nublado ? "NUBLADO" : "ENSOLARADO";
-            document.getElementById('chuva-val').innerText = (nublado ? (Math.random()*4).toFixed(1) : "0.0") + "mm";
+function abrirInspecao(index) {
+    droneEmInspecaoIndex = index;
+    const d = drones[index];
+    
+    document.getElementById('inspecao-title').innerText = `🔍 INSPEÇÃO: ${d.id}`;
+    document.getElementById('inspecao-local').innerText = d.local;
+    document.getElementById('inspecao-coords').innerText = d.coords;
+    document.getElementById('inspecao-bateria').innerText = `${d.bateria.toFixed(1)}%`;
+    document.getElementById('inspecao-sinal').innerText = d.sinal;
+    
+    // Seleciona GIF da lista de IDLE
+    const gifAleatorio = randomIdleGifs[Math.floor(Math.random() * randomIdleGifs.length)];
+    document.getElementById('inspecao-feed').src = gifAleatorio;
 
-            drones.forEach(d => {
-                if(d.status !== "OFF-LINE") {
-                    d.bateria -= nublado ? 0.6 : 0.2;
-                    if(d.bateria < 0) d.bateria = 0;
-                    
-                    const fill = document.getElementById(`bat-fill-${d.id}`);
-                    const txt = document.getElementById(`bat-txt-${d.id}`);
-                    if(fill) {
-                        fill.style.width = d.bateria + "%";
-                        fill.style.background = d.bateria < 20 ? "var(--alert)" : "var(--accent)";
-                    }
-                    if(txt) txt.innerText = d.bateria.toFixed(1);
-                }
-            });
+    const btnPousar = document.getElementById('inspecao-btn-pousar');
+    btnPousar.onclick = () => {
+        pousarDrone(index);
+        fecharInspecao();
+    };
 
-            if(Math.random() < 0.1) {
-                const disponivel = drones.find(d => d.status === "ON-LINE");
-                if(disponivel) dispararAlerta(disponivel);
-            }
-            setTimeout(cicloVida, 3000);
-        }
+    document.getElementById('modal-inspecao').style.display = 'block';
+}
 
-        function dispararAlerta(drone) {
-            drone.status = "ALERTA";
-            droneEmAlerta = drone.id;
-            renderizarFrota();
+function fecharInspecao() {
+    document.getElementById('modal-inspecao').style.display = 'none';
+    droneEmInspecaoIndex = null;
+}
+
+function adicionarDrone() {
+    const novoId = `VAI-0${drones.length + 1}`;
+    const lat = (-24.7572 + (Math.random() - 0.5) * 0.04).toFixed(4);
+    const lng = (-51.7600 + (Math.random() - 0.5) * 0.04).toFixed(4);
+    
+    drones.push({ 
+        id: novoId, 
+        bateria: 100, 
+        status: "ON-LINE", 
+        local: locais[Math.floor(Math.random()*locais.length)], 
+        sinal: "5G",
+        coords: `${lat}, ${lng}`
+    });
+    renderizarFrota();
+    registrarLog(novoId, "Drone Inicializado", "OK");
+}
+
+function pousarDrone(index) {
+    drones[index].status = "OFF-LINE";
+    registrarLog(drones[index].id, "Pouso Solicitado", "SOLO");
+    renderizarFrota();
+}
+
+function cicloVida() {
+    const nublado = Math.random() < 0.3;
+    document.getElementById('clima-txt').innerText = nublado ? "NUBLADO" : "ENSOLARADO";
+    document.getElementById('chuva-val').innerText = (nublado ? (Math.random()*4).toFixed(1) : "0.0") + "mm";
+
+    drones.forEach((d, index) => {
+        if(d.status !== "OFF-LINE" && d.status !== "POUSANDO") {
+            const decaimentoAleatorio = (Math.random() * 2.7 + 0.8) * (nublado ? 1.4 : 1.0);
+            d.bateria -= decaimentoAleatorio;
+            if(d.bateria < 0) d.bateria = 0;
             
-            const lista = document.getElementById('lista-resumo');
-            document.getElementById('empty-msg').style.display = 'none';
-            const item = document.createElement('li');
-            item.id = `resumo-${drone.id}`;
-            item.style.borderBottom = "1px solid #333";
-            item.style.padding = "5px 0";
-            item.innerHTML = `<b style="color:var(--alert)">🚨 ALERTA: ${drone.id}</b><br><small>${drone.local} - Clique para abrir</small>`;
-            item.style.cursor = "pointer";
-            item.onclick = () => abrirAlerta(drone.id);
-            lista.prepend(item);
-        }
-
-        function abrirAlerta(id) {
-            droneEmAlerta = id;
-            document.getElementById('drone-alerta-id').innerText = id;
-            document.getElementById('ia-box').innerText = "SUSPEITA DE INCÊNDIO EM " + drones.find(d => d.id === id).local.toUpperCase();
-            document.getElementById('camera-overlay').style.display = 'block';
-        }
-
-        function fecharAlerta() {
-            document.getElementById('camera-overlay').style.display = 'none';
-            const d = drones.find(d => d.id === droneEmAlerta);
-            if(d) d.status = "ON-LINE";
-            renderizarFrota();
-        }
-
-        function despachar(orgao) {
-            registrarLog(droneEmAlerta, "Despacho: " + orgao, "EM CURSO");
-            const resumo = document.getElementById(`resumo-${droneEmAlerta}`);
-            if(resumo) {
-                resumo.innerHTML = `<b style="color:var(--accent)">✅ RESOLVIDO: ${orgao}</b><br><small>${droneEmAlerta} em base.</small>`;
-                resumo.onclick = null;
+            // Atualiza elementos no card principal
+            const fill = document.getElementById(`bat-fill-${d.id}`);
+            const txt = document.getElementById(`bat-txt-${d.id}`);
+            if(fill) {
+                fill.style.width = d.bateria + "%";
+                fill.style.background = d.bateria < 20 ? "var(--alert)" : "var(--accent)";
             }
-            fecharAlerta();
-        }
+            if(txt) txt.innerText = d.bateria.toFixed(1);
 
-        function registrarLog(id, acao, status) {
-            const tbody = document.querySelector('#tabela-logs tbody');
-            const row = tbody.insertRow(0);
-            row.innerHTML = `<td>${new Date().toLocaleTimeString().slice(0,5)}</td><td>${id}</td><td>${acao}</td><td>${status}</td>`;
+            // Atualiza a bateria no modal de inspeção se ele estiver aberto para este drone
+            if(droneEmInspecaoIndex === index) {
+                document.getElementById('inspecao-bateria').innerText = `${d.bateria.toFixed(1)}%`;
+            }
+
+            // Pouso automático de emergência
+            if(d.bateria <= 18) {
+                iniciarPousoEmergencia(d, index);
+            }
         }
+    });
+
+    if(Math.random() < 0.1) {
+        const disponivel = drones.find(d => d.status === "ON-LINE");
+        if(disponivel) dispararAlerta(disponivel);
+    }
+    setTimeout(cicloVida, 3000);
+}
+
+function iniciarPousoEmergencia(drone, index) {
+    drone.status = "POUSANDO";
+    if (droneEmInspecaoIndex === index) fecharInspecao();
+    renderizarFrota();
+    
+    registrarLog(drone.id, "Bateria Baixa (<18%)", "RETORNO AUTOMÁTICO");
+    
+    const lista = document.getElementById('lista-resumo');
+    document.getElementById('empty-msg').style.display = 'none';
+    const item = document.createElement('li');
+    item.style.borderBottom = "1px solid #333";
+    item.style.padding = "5px 0";
+    item.innerHTML = `<b style="color:var(--alert)">🪫 BATERIA CRÍTICA: ${drone.id}</b><br><small>${drone.local} - Pouso automático iniciado (${drone.bateria.toFixed(1)}%)</small>`;
+    lista.prepend(item);
+
+    setTimeout(() => {
+        drones[index].status = "OFF-LINE";
+        registrarLog(drone.id, "Pouso de Emergência Concluído", "SOLO");
+        renderizarFrota();
+    }, 5000);
+}
+
+function dispararAlerta(drone) {
+    drone.status = "ALERTA";
+    drone.tipoAlerta = Math.random() < 0.5 ? "fire" : "theft"; // Sorteia o estado do alerta
+    droneEmAlerta = drone.id;
+    renderizarFrota();
+    
+    const lista = document.getElementById('lista-resumo');
+    document.getElementById('empty-msg').style.display = 'none';
+    
+    const item = document.createElement('li');
+    item.id = `resumo-${drone.id}`;
+    item.style.borderBottom = "1px solid #333";
+    item.style.padding = "5px 0";
+    
+    const icone = drone.tipoAlerta === 'fire' ? '🔥' : '🚨';
+    const rotulo = drone.tipoAlerta === 'fire' ? 'INCÊNDIO' : 'SUSPEITA DE FURTO';
+    
+    item.innerHTML = `<b style="color:var(--alert)">${icone} ${rotulo}: ${drone.id}</b><br><small>${drone.local} - Clique para abrir</small>`;
+    item.style.cursor = "pointer";
+    item.onclick = () => abrirAlerta(drone.id);
+    lista.prepend(item);
+}
+
+function abrirAlerta(id) {
+    droneEmAlerta = id;
+    const d = drones.find(item => item.id === id);
+    if (!d) return;
+
+    document.getElementById('drone-alerta-id').innerText = id;
+    const imgFeed = document.getElementById('camera-feed-img');
+    const iaBox = document.getElementById('ia-box');
+
+    if (d.tipoAlerta === 'theft') {
+        const imagem = theftGifs[Math.floor(Math.random() * theftGifs.length)];
+        imgFeed.src = imagem;
+        iaBox.innerText = `DETECÇÃO DE INVASÃO / FURTO EM ${d.local.toUpperCase()}`;
+    } else {
+        const imagem = fireHazardGifs[Math.floor(Math.random() * fireHazardGifs.length)];
+        imgFeed.src = imagem;
+        iaBox.innerText = `SUSPEITA DE INCÊNDIO EM ${d.local.toUpperCase()}`;
+    }
+
+    document.getElementById('camera-overlay').style.display = 'block';
+}
+
+function fecharAlerta() {
+    document.getElementById('camera-overlay').style.display = 'none';
+    const d = drones.find(d => d.id === droneEmAlerta);
+    if(d && d.status === "ALERTA") d.status = "ON-LINE";
+    renderizarFrota();
+}
+
+function despachar(orgao) {
+    registrarLog(droneEmAlerta, "Despacho: " + orgao, "EM CURSO");
+    const resumo = document.getElementById(`resumo-${droneEmAlerta}`);
+    if(resumo) {
+        resumo.innerHTML = `<b style="color:var(--accent)">✅ RESOLVIDO: ${orgao}</b><br><small>${droneEmAlerta} em base.</small>`;
+        resumo.onclick = null;
+    }
+    fecharAlerta();
+}
+
+function registrarLog(id, acao, status) {
+    const tbody = document.querySelector('#tabela-logs tbody');
+    const row = tbody.insertRow(0);
+    row.innerHTML = `<td>${new Date().toLocaleTimeString().slice(0,5)}</td><td>${id}</td><td>${acao}</td><td>${status}</td>`;
+}
     </script>
+        
 </body>
-</html>
